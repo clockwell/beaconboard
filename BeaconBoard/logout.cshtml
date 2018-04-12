@@ -1,0 +1,26 @@
+﻿@{
+    FormsAuthentication.SignOut();
+    Response.Redirect("~/login.cshtml");
+}
+
+@section pageTitle {DARM Logout}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login | BeaconBoard</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+    <link href="~/css/login.css" rel="stylesheet" />
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <p>Logged out.</p>
+    </div>
+
+</body>
+
+</html>
