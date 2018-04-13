@@ -21,12 +21,6 @@ namespace BeaconBoard.handlers
             {
                 switch (context.Request["requestType"])
                 {
-                    case "Login":
-                        {
-                            System.Web.Security.FormsAuthentication.SetAuthCookie("test", false);
-                            context.Response.Redirect("~/index.cshtml");
-                        }
-                        break;
                     case "ListUsers":
                         using (Database db = Database.Open("Beacon"))
                         {
