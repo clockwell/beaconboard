@@ -6,10 +6,9 @@
     string userID = Request.Form["userID"];
     string userName = Request.Form["userName"];
     string password = Request.Form["password"];
-    string schema = Request.Form["schema"];
     if (IsPost && Validation.IsValid())
     {
-        if (userID != null && schema != null && password == BBCore.password)
+        if (userID != null && password == BBCore.password)
         {
             BBCore.currentUserID = Convert.ToInt32(userID);
             BBCore.currentUserName = userName;

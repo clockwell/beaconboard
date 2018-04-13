@@ -1,0 +1,106 @@
+﻿@using BeaconBoard.CoreClasses;
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BeaconBoard</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+    <link href="~/css/beaconboard.css" rel="stylesheet" />
+</head>
+
+<body>
+    
+    <header>
+        <div class="header-wrapper">
+            <span>User: @Html.Raw(BBCore.currentUserName)</span>
+            <span>Schema: @Html.Raw(BBCore.currentSchema)</span>
+            <span><a href="~/logout.cshtml">Logout</a></span>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <h1>BeaconBoard</h1>
+        <table id="board">
+            <thead><tr><th>Thread</th><th>Author</th><th>Last Reply</th><th>Manage</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <h2>New Thread</h2>
+        <p><input type="text" id="new-thread-title" /></p>
+        <textarea id="new-thread-first-post"></textarea>
+        <p><button id="new-thread">Post</button></p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script>
+
+        function raiseError(message) {
+            console.error(message);
+            alert(message);
+        }
+
+        function refreshBoard() {
+            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'ListThreads' }, function (res, status) {
+                // console.log(res);
+                if (res.status == 'OK') {
+                    let $boardBody = $('#board tbody');
+                    $boardBody.empty();
+                    for (let i = 0; i < res.data.length; i++) {
+                        let thread = res.data[i];
+                        $boardBody.append('<tr data-thread-id="' + thread.ID + '"><td><a href="@Href("~/thread.cshtml")?threadID=' + thread.ID + '">' + thread.threadTitle + '</a></td><td>' + thread.author + '</td><td>' + thread.modifiedDate.replace(/T/g, ' ').replace(/\.\d*$/g, '') + '</td><td><span class="thread-tool delete">&times;</span></td></tr>');
+                    }
+                }
+                else {
+                    raiseError(res.data);
+                }
+            }, 'json');
+        }
+
+        function addThread() {
+            let $newTitle = $('#new-thread-title');
+            let $newPost = $('#new-thread-first-post');
+            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'OpenThread',  threadTitle: $newTitle.val(), firstPostContent: $newPost.val() }, function (res, status) {
+                // console.log(res);
+                if (res.status == 'OK') {
+                    refreshBoard();
+                }
+                else {
+                    raiseError(res.data);
+                }
+                $newTitle.val('');
+                $newPost.val('');
+            }, 'json');
+        }
+
+        function deleteThread(threadID) {
+            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'DeleteThread', threadID: threadID }, function (res, status) {
+                // console.log(res);
+                if (res.status == 'OK') {
+                    refreshBoard();
+                }
+                else {
+                    raiseError(res.data);
+                }
+            }, 'json');
+        }
+
+        $(document).ready(function () {
+
+            $('#new-thread').click(() => { addThread(); });
+
+            $('#board').on('click', '.thread-tool.delete', function () {
+                if (confirm('Confirm deleting this thread?')) {
+                    deleteThread($(this).closest('tr').data('thread-id'));
+                }
+            });
+
+            refreshBoard();
+
+        });
+
+    </script>
+
+</body>
+
+</html>

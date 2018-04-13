@@ -109,6 +109,7 @@
     <Content Include="thread.cshtml" />
     <Content Include="login.cshtml" />
     <Content Include="logout.cshtml" />
+    <None Include="Properties\PublishProfiles\File.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
