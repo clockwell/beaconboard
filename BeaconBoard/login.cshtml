@@ -3,29 +3,19 @@
 
 @{
     string message = "Welcome to BeaconBoard";
-    string userID = Request.Form["userID"];
-    string userName = Request.Form["userName"];
+    string schema = Request.Form["schema"];
     string password = Request.Form["password"];
     if (IsPost && Validation.IsValid())
     {
-        if (userID != null && password == BBCore.password)
+        if (password == BBCore.password)
         {
-            BBCore.currentUserID = Convert.ToInt32(userID);
-            BBCore.currentUserName = userName;
-            FormsAuthentication.SetAuthCookie(userName, false);
+            BBCore.currentSchema = schema;
+            FormsAuthentication.SetAuthCookie(schema, false);
             Response.Redirect("~/index.cshtml");
         }
         else
         {
             message = "Credential Invald.";
-        }
-    }
-    string userOptions = "<option value=\"\" selected disabled hidden>Select User</option>";
-    using (Database db = Database.Open("Beacon"))
-    {
-        foreach (var row in db.Query($"EXEC {BBCore.currentSchema}.usp_ListUsers"))
-        {
-            userOptions += $"<option value=\"{row["user_ID"]}\">{row["user_name"]}</option>";
         }
     }
 }
@@ -45,28 +35,19 @@
     <div class="wrapper">
         <p>@Html.Raw(message)</p>
         <form name="login" action="" method="post">
-            @*<p>
-                <select name="schema">
-                    <option value="czhong" selected disabled hidden>Select Schema</option>
+            <p>Select Schema: <select name="schema">
+                    <option value="czhong" selected>czhong</option>
+                    <option value="Xwang">Xwang</option>
+                    <option value="dfang">dfang</option>
+                    <option value="xjiang">xjiang</option>
+                    <option value="ylin">ylin</option>
+                    <option value="yyang">yyang</option>
                 </select>
-            </p>*@
-            <p><select name="userID">@Html.Raw(userOptions)</select></p>
-            <p><input type="password" name="password" placeholder="Password" /></p>
+            </p>
+            <p>Password: <input type="password" name="password" placeholder="Password" /></p>
             <p><input type="submit" value="Login" /></p>
-            <input type="hidden" name="userName" />
         </form>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script>
-
-        $(document).ready(function () {
-            $('select[name="userID"]').change(function () {
-                $('input[name="userName"]').val($(this).find('option:selected').text());
-            });
-        });
-        
-    </script>
 
 </body>
 

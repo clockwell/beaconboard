@@ -1,0 +1,86 @@
+﻿@using BeaconBoard.CoreClasses;
+@using WebMatrix.Data;
+
+@{
+    string userOptions = "";
+    string message = "OK";
+    try
+    {
+        using (Database db = Database.Open("Beacon"))
+        {
+            foreach (var row in db.Query($"EXEC {BBCore.currentSchema}.usp_ListUsers"))
+            {
+                int userID = Convert.ToInt32(row["user_ID"]);
+                string userName = row["user_name"];
+                if (BBCore.currentUserID < 0)
+                {
+                    BBCore.currentUserID = userID;
+                    BBCore.currentUserName = userName;
+                }
+                string isSelected = (BBCore.currentUserID == userID ? " selected" : "");
+                userOptions += $"<option value=\"{userID}\"{isSelected}>{userName}</option>";
+            }
+            if (BBCore.currentUserID < 0)
+            {
+                message = "ERROR: No record returned from usp_ListUsers.";
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        message = ex.Message;
+    }
+}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BeaconBoard</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+    <link href="~/css/beaconboard.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-wrapper">
+            <span>User: <select id="user-selector" onchange="switchUser(this)">@Html.Raw(userOptions)</select></span>
+            <span>Schema: @Html.Raw(BBCore.currentSchema)</span>
+            <span><a href="~/logout.cshtml">Logout</a></span>
+        </div>
+    </header>
+
+    <script>
+
+        function raiseError(message) {
+            console.error(message);
+            alert(message);
+        }
+
+        function switchUser(select) {
+            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'SwitchUser', userID: select.value }, function (res, status) {
+                if (res.status == 'OK') {
+                    window.location.reload();
+                }
+                else {
+                    raiseError(res.data);
+                }
+            }, 'json');
+        }
+
+        let msg = `@Html.Raw(message)`;
+        if (msg != 'OK') {
+            raiseError(msg);
+            window.location = './logout.cshtml';
+        }
+
+    </script>
+
+    @RenderBody()
+
+</body>
+
+</html>

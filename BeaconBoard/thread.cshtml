@@ -1,132 +1,101 @@
-﻿@using BeaconBoard.CoreClasses;
-
-@{ 
+﻿@{ 
+    Layout = "~/_layout.cshtml";
     string threadID = (String.IsNullOrEmpty(Request.Params["threadID"]) ? "null" : Request.Params["threadID"]);
 }
 
-<!DOCTYPE html>
-<html>
+<div class="wrapper">
+    <p><a href="~/index.cshtml">&lt; Back to Board</a></p>
+    <h2 id="thread-title"></h2>
+    <div id="posts"></div>
+    <h2>Post Reply</h2>
+    <textarea id="new-post"></textarea>
+    <p><button id="reply">Post</button></p>
+</div>
 
-<head>
-    <title>Thread | BeaconBoard</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
-    <link href="~/css/beaconboard.css" rel="stylesheet" />
-</head>
+<script>
 
-<body>
+    let threadID = '@Html.Raw(threadID)';
 
-    <header>
-        <div class="header-wrapper">
-            <span>User: @Html.Raw(BBCore.currentUserName)</span>
-            <span>Schema: @Html.Raw(BBCore.currentSchema)</span>
-            <span><a href="~/logout.cshtml">Logout</a></span>
-        </div>
-    </header>
-
-    <div class="wrapper">
-        <p><a href="~/index.cshtml">&lt; Back to Board</a></p>
-        <h2 id="thread-title"></h2>
-        <div id="posts"></div>
-        <h2>Post Reply</h2>
-        <textarea id="new-post"></textarea>
-        <p><button id="reply">Post</button></p>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script>
-
-        let threadID = '@Html.Raw(threadID)';
-
-        function raiseError(message) {
-            console.error(message);
-            alert(message);
-        }
-
-        function refreshThread() {
-            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'ListPosts', threadID: threadID }, function (res, status) {
-                if (res.status == 'OK') {
-                    $('#thread-title').text(res.data[0].threadTitle);
-                    let $posts = $('#posts');
-                    $posts.empty();
-                    for (let i = 0; i < res.data.length; i++) {
-                        let post = res.data[i];
-                        $posts.append('<div class="post" data-post-id="' + post.ID + '"><div class="post-author">' + post.author + ':</div><div class="post-content">' + post.postContent + '</div><textarea class="post-content-editor" style="display:none;"></textarea><div class="post-meta">' + post.createdDate.replace(/T/g, ' ').replace(/\.\d*$/g, '') + '<br /><span class="post-tool edit">Edit</span> | <span class="post-tool delete">Delete</span></div></div>');
-                    }
+    function refreshThread() {
+        $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'ListPosts', threadID: threadID }, function (res, status) {
+            if (res.status == 'OK') {
+                $('#thread-title').text(res.data[0].threadTitle);
+                let $posts = $('#posts');
+                $posts.empty();
+                for (let i = 0; i < res.data.length; i++) {
+                    let post = res.data[i];
+                    $posts.append('<div class="post" data-post-id="' + post.ID + '"><div class="post-author">' + post.author + ':</div><div class="post-content">' + post.postContent + '</div><textarea class="post-content-editor" style="display:none;"></textarea><div class="post-meta">' + post.createdDate.replace(/T/g, ' ').replace(/\.\d*$/g, '') + '<br /><span class="post-tool edit">Edit</span> | <span class="post-tool delete">Delete</span></div></div>');
                 }
-                else {
-                    raiseError(res.data);
-                }
-            }, 'json');
-        }
+            }
+            else {
+                raiseError(res.data);
+            }
+        }, 'json');
+    }
 
-        function reply() {
-            let $newPost = $('#new-post');
-            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'ReplyThread', threadID: threadID, postContent: $newPost.val() }, function (res, status) {
-                if (res.status == 'OK') {
-                    refreshThread();
-                }
-                else {
-                    raiseError(res.data);
-                }
-                $newPost.val('');
-            }, 'json');
-        }
+    function reply() {
+        let $newPost = $('#new-post');
+        $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'ReplyThread', threadID: threadID, postContent: $newPost.val() }, function (res, status) {
+            if (res.status == 'OK') {
+                refreshThread();
+            }
+            else {
+                raiseError(res.data);
+            }
+            $newPost.val('');
+        }, 'json');
+    }
 
-        function submitPostEdit(postID, postContent) {
-            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'EditPost', postID: postID, postContent: postContent }, function (res, status) {
-                if (res.status == 'OK') {
-                    refreshThread();
-                }
-                else {
-                    raiseError(res.data);
-                }
-            }, 'json');
-        }
+    function submitPostEdit(postID, postContent) {
+        $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'EditPost', postID: postID, postContent: postContent }, function (res, status) {
+            if (res.status == 'OK') {
+                refreshThread();
+            }
+            else {
+                raiseError(res.data);
+            }
+        }, 'json');
+    }
 
-        function deletePost(postID) {
-            $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'DeletePost', postID: postID }, function (res, status) {
-                if (res.status == 'OK') {
-                    refreshThread();
-                }
-                else {
-                    raiseError(res.data);
-                }
-            }, 'json');
-        }
+    function deletePost(postID) {
+        $.post('@Href("~/Handlers/handler.ashx")', { requestType: 'DeletePost', postID: postID }, function (res, status) {
+            if (res.status == 'OK') {
+                refreshThread();
+            }
+            else {
+                raiseError(res.data);
+            }
+        }, 'json');
+    }
 
-        $(document).ready(function () {
+    $(document).ready(function () {
 
-            $('#reply').click(() => { reply(); });
+        $('#reply').click(() => { reply(); });
 
-            $('#posts').on('click', '.post-tool.edit', function () {
-                let $this = $(this);
-                $this.removeClass('edit').addClass('edit-submit').text('Submit');
-                let $post = $this.closest('.post');
-                let $postContent = $post.find('.post-content');
-                $postContent.hide();
-                $post.find('.post-content-editor').val($postContent.text()).show().focus();
-            });
-
-            $('#posts').on('click', '.post-tool.edit-submit', function () {
-                if (confirm('Confirm editing this post?')) {
-                    let $post = $(this).closest('.post');
-                    submitPostEdit($post.data('post-id'), $post.find('.post-content-editor').val());
-                }
-            });
-
-            $('#posts').on('click', '.post-tool.delete', function () {
-                if (confirm('Confirm deleting this post?')) {
-                    deletePost($(this).closest('.post').data('post-id'));
-                }
-            });
-
-            refreshThread();
-
+        $('#posts').on('click', '.post-tool.edit', function () {
+            let $this = $(this);
+            $this.removeClass('edit').addClass('edit-submit').text('Submit');
+            let $post = $this.closest('.post');
+            let $postContent = $post.find('.post-content');
+            $postContent.hide();
+            $post.find('.post-content-editor').val($postContent.text()).show().focus();
         });
 
-    </script>
+        $('#posts').on('click', '.post-tool.edit-submit', function () {
+            if (confirm('Confirm editing this post?')) {
+                let $post = $(this).closest('.post');
+                submitPostEdit($post.data('post-id'), $post.find('.post-content-editor').val());
+            }
+        });
 
-</body>
+        $('#posts').on('click', '.post-tool.delete', function () {
+            if (confirm('Confirm deleting this post?')) {
+                deletePost($(this).closest('.post').data('post-id'));
+            }
+        });
 
-</html>
+        refreshThread();
+
+    });
+
+</script>

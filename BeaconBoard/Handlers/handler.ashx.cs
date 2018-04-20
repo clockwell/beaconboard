@@ -21,25 +21,11 @@ namespace BeaconBoard.handlers
             {
                 switch (context.Request["requestType"])
                 {
-                    case "Login":
+                    case "SwitchUser":
                         {
-                            System.Web.Security.FormsAuthentication.SetAuthCookie("test", false);
-                            context.Response.Redirect("~/index.cshtml");
-                        }
-                        break;
-                    case "ListUsers":
-                        using (Database db = Database.Open("Beacon"))
-                        {
-                            JArray jaUsers = new JArray();
-                            foreach (var row in db.Query($"EXEC {schema}.usp_ListUsers"))
-                            {
-                                JObject jUser = new JObject();
-                                jUser.Add("ID", row["user_ID"]);
-                                jUser.Add("userName", row["user_name"]);
-                                jaUsers.Add(jUser);
-                            }
+                            BBCore.currentUserID = Convert.ToInt32(context.Request["userID"]);
                             jResult.Add("status", "OK");
-                            jResult.Add("data", jaUsers);
+                            jResult.Add("data", null);
                         }
                         break;
                     case "ListThreads":
